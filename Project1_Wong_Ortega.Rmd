@@ -1,0 +1,114 @@
+---
+title: "Project 1: Covid-19 Analysis"
+author: "Marthew Wong, Lizbeth Ortega"
+date: "2026-04-02"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Objective 1
+
+
+Location of Max confirmations of COVID-19 is Hubei, China as of 01/22/2026
+
+Location of Max deaths of COVID-19 is Hubei, China as of 01/22/2026
+
+Hubei, China is equivalent to 73, since its the 73rd row.
+
+Confirmations equal 444, deaths equal 17
+
+
+```{r}
+
+library(readr)
+
+url_conf <- "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv"
+
+time_series_covid19_confirmed_global<-read_csv(url_conf)
+
+# View(time_series_covid19_confirmed_global)
+first_day_data <-as.Date("2020-01-22")
+max_cases_location <- first_day_data[which.max(2020-01-22)]
+location_name <- 73
+if (73 > 0) {print(paste("The origin is predicted to be:", location_name,"based on max cases of", 444 ,"on date", 2020-01-22))} else {print("Origin cannot be determined from the first day data.")}
+
+
+```
+
+
+#Objective 2
+
+```{r ob2}
+#Where is the most recent area to have a first confirmed case?
+
+```
+
+
+
+
+# Objective 5
+
+Table of the top 5 countries with the most COVID-19-related confirmations.
+
+```{r}
+library(knitr)
+
+
+url_conf <- "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv"
+data_conf <- read.csv(url_conf)
+
+url_deaths <- "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv"
+data_deaths <- read.csv(url_deaths)
+
+data_merged <- merge(x=data_conf, y=data_deaths,
+                     by.x = c("Country.Region","Province.State"),
+                     by.y = c("Country.Region","Province.State"))
+
+data_merged_use <- data_merged[!((data_merged$Lat.x == 0 & data_merged$Long.x == 0) | 
+                (is.na(data_merged$Lat.x) & is.na(data_merged$Long.x))),]
+
+
+country <- unique(data_merged_use$Country.Region)
+
+country_sum_conf <- c()
+country_sum_deaths <- c()
+
+for (i in 1:length(country)) {
+    
+    country_sub <- data_merged_use[data_merged_use$Country.Region == country[i],]
+    
+    country_sum_conf[i] <- sum(country_sub$X3.9.23.x, na.rm = T)
+
+    country_sum_deaths[i] <-sum(country_sub$X3.9.23.y, na.rm = T)    
+}
+
+country_list <- list(country_name = country,
+                     num_of_confirmations = country_sum_conf,
+                     num_of_deaths = country_sum_deaths
+                     )
+
+country_df <- as.data.frame(country_list)
+
+country_df <- country_df[order(country_df$num_of_confirmations,decreasing = T), ]
+
+
+kable(head(country_df[, c("country_name","num_of_confirmations")], 5))
+
+```
+
+Table of the top 5 countries with the most COVID-19-related deaths.
+
+```{r}
+
+country_df <- country_df[order(country_df$num_of_deaths,decreasing = T), ]
+
+kable(head(country_df[, c("country_name","num_of_deaths")], 5))
+
+```
+
+
+
