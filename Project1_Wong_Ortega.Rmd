@@ -48,6 +48,61 @@ if (73 > 0) {print(paste("The origin is predicted to be:", location_name,"based 
 ```
 
 
+# Objective 4
+
+```{r}
+library(knitr)
+
+
+url_conf <- "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv"
+data_conf <- read.csv(url_conf)
+
+url_deaths <- "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv"
+data_deaths <- read.csv(url_deaths)
+
+#merge confirmations and deaths on country and province.
+data_merged <- merge(x=data_conf, y=data_deaths,
+                     by.x = c("Country.Region","Province.State"),
+                     by.y = c("Country.Region","Province.State"))
+
+#remove cruise
+data_merged_use <- data_merged[!((data_merged$Lat.x == 0 & data_merged$Long.x == 0) | 
+                (is.na(data_merged$Lat.x) & is.na(data_merged$Long.x))),]
+
+#calculate risk
+data_merged_use$latest_risk <- 100 * (data_merged_use$X3.9.23.y / data_merged_use$X3.9.23.x)
+
+#Which area of the world currently has the lowest risk score 
+#grab rows where risk = min(risk)
+lowest_risk <- data_merged_use[data_merged_use$latest_risk == min(data_merged_use$latest_risk, na.rm = T) &
+                             is.na(data_merged_use$latest_risk) == F, ]
+#Among those, take highest confirmation
+lowest_risk <- lowest_risk[order(lowest_risk$X3.9.23.x,decreasing = T), ]
+
+lowest_risk[1,c("Country.Region","Province.State","latest_risk","X3.9.23.x","X3.9.23.y")]
+
+```
+The area of the world currently having the lowest risk score is Jiangsu, China. The risk score is zero and there were zero deaths and 5075 confirmations.
+
+```{r}
+#Which area of the world currently has the highest risk score 
+#(if more than one, display the one with the most confirmations)? 
+highest_risk <- data_merged_use[data_merged_use$latest_risk == max(data_merged_use$latest_risk, na.rm = T) &
+                                   is.na(data_merged_use$latest_risk) == F, ]
+
+highest_risk <- highest_risk[order(highest_risk$X3.9.23.x,decreasing = T), ]
+
+
+highest_risk[1,c("Country.Region","Province.State","latest_risk","X3.9.23.x","X3.9.23.y")]
+
+```
+The area of the world currently having the highest risk score is North Korea. The risk score is 6 and there were 1 death and 600 confirmations.
+
+
+```{r}
+mean(data_merged_use$latest_risk, na.rm = T)
+```
+The mean global risk score is 3.2. Different areas of the world may have different risk score since different regions (geographically like Middle East, Southeast Asia, North America, or socioeconomically like by GDP) would naturally have different average risk score due to many factors like reporting, detection and treatment capability. It is more meaningful to compare any given country's risk score to another comparable country or countries. The findings of where are the lowest and highest risk scores underline the limitations of the risk score. The data is only as good as the collection method. North Korea likely does not have a good disease surveillance program and even if it does, may not report accurate numbers for political reasons. So it only had one death, but compared against an artificially low confirmation number of 600 made the risk score so high. The risk score also does not take into account population size, so morbidity burden cannot be assessed.
 
 
 # Objective 5
@@ -70,7 +125,6 @@ data_merged <- merge(x=data_conf, y=data_deaths,
 
 data_merged_use <- data_merged[!((data_merged$Lat.x == 0 & data_merged$Long.x == 0) | 
                 (is.na(data_merged$Lat.x) & is.na(data_merged$Long.x))),]
-
 
 country <- unique(data_merged_use$Country.Region)
 
