@@ -44,7 +44,7 @@ if (73 > 0) {print(paste("The origin is predicted to be:", location_name,"based 
 
 Where is the recent area to have a confirmed case?
 
-```{r ob2}
+```{r}
 library(dplyr)
 library(tidyr)
 url_conf <- "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv"
@@ -70,9 +70,19 @@ Latest date came out to 2022-05-23
 
 # Objective 3
 
-
-
-
+How far away are the areas from objective 2 from where the first confirmed case(s) occurred?
+In other words, how far is Tuvalu from Hubei China?
+```{r}
+library(dplyr)
+origin_row <- data_conf[data_conf$`Country/Region` == "China" & data_conf$`Province/State` == "Hubei", ]
+origin_coords <- c(origin_row$Long, origin_row$Lat)
+recent_row <- data_conf[data_conf$`Country/Region` == latest_area, ][1,]
+recent_coords <- c(recent_row$Long, recent_row$Lat)
+dist_meters <- geosphere::distm(origin_coords, recent_coords)
+dist_miles <- dist_meters * 0.000621371
+cat(paste0(latest_area, " is ", round(dist_miles, 2)," miles away from Hubei, China.\n"))
+```
+Answer is Tuvalu is 5048.88 miles away from Hubei, China.
 
 # Objective 4
 
