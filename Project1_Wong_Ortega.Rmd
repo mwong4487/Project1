@@ -42,10 +42,36 @@ if (73 > 0) {print(paste("The origin is predicted to be:", location_name,"based 
 
 #Objective 2
 
-```{r ob2}
-#Where is the most recent area to have a first confirmed case?
+Where is the recent area to have a confirmed case?
 
+```{r ob2}
+library(dplyr)
+library(tidyr)
+url_conf <- "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv"
+data_conf <- read.csv(url_conf, check.names = FALSE)
+data_long <- data_conf %>%
+
+pivot_longer(cols = -c(`Province/State`, `Country/Region`, Lat, Long),names_to = "date",values_to = "cases") %>%
+mutate(date = as.Date(date, format = "%m/%d/%y"))
+latest_date <- as.Date("2020-01-22")
+latest_area <- ""
+
+countries <- unique(data_long$`Country/Region`)
+for (c in countries) {subset_data <- data_long[data_long$`Country/Region` == c, ]
+first_case_date <- min(subset_data$date[subset_data$cases > 0], na.rm = TRUE)
+if (first_case_date > latest_date) {latest_date <- first_case_date
+latest_area <- c}}
+
+latest_area
+latest_date
 ```
+Latest Area came out to Tuvalu
+Latest date came out to 2022-05-23
+
+# Objective 3
+
+
+
 
 
 # Objective 4
