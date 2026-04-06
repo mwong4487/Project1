@@ -13,14 +13,6 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
 # Objective 1
 
 
-Location of Max confirmations of COVID-19 is Hubei, China as of 01/22/2026
-
-Location of Max deaths of COVID-19 is Hubei, China as of 01/22/2026
-
-Hubei, China is equivalent to 73, since its the 73rd row.
-
-Confirmations equal 444, deaths equal 17
-
 
 ```{r}
 
