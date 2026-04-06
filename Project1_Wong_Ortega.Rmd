@@ -52,16 +52,18 @@ data_conf <- read.csv(url_conf, check.names = FALSE)
 data_long <- data_conf %>%
 
 pivot_longer(cols = -c(`Province/State`, `Country/Region`, Lat, Long),names_to = "date",values_to = "cases") %>%
-mutate(date = as.Date(date, format = "%m/%d/%y"))
-latest_date <- as.Date("2020-01-22")
+mutate(date = as.Date(date, format = "%m/%d/%y")) #We have to convert the date from character to date format for no complications
+#We have to set a value, confirm the date as the earliest date on the dataset. We leave the area blank because it will store which area is the one with the most recent first cases. 
+latest_date <- as.Date("2020-01-22") 
 latest_area <- ""
 
 countries <- unique(data_long$`Country/Region`)
+#Loop through each country to find its first confirmed case
 for (c in countries) {subset_data <- data_long[data_long$`Country/Region` == c, ]
 first_case_date <- min(subset_data$date[subset_data$cases > 0], na.rm = TRUE)
 if (first_case_date > latest_date) {latest_date <- first_case_date
 latest_area <- c}}
-
+#Result in country with the most recent first confirmed case and the corresponding date
 latest_area
 latest_date
 ```
@@ -74,12 +76,19 @@ How far away are the areas from objective 2 from where the first confirmed case(
 In other words, how far is Tuvalu from Hubei China?
 ```{r}
 library(dplyr)
+#We have to subset the dataset to find the row that contains the first known case from objective 1
 origin_row <- data_conf[data_conf$`Country/Region` == "China" & data_conf$`Province/State` == "Hubei", ]
+#Get coordinates of objective 1 region 
 origin_coords <- c(origin_row$Long, origin_row$Lat)
+#We have to subset the dataset to find the recent first confirmation from objective 2
 recent_row <- data_conf[data_conf$`Country/Region` == latest_area, ][1,]
+#Get coordinates of objective 2 region
 recent_coords <- c(recent_row$Long, recent_row$Lat)
+#Calculate distance between regions of obj 1 and 2 
 dist_meters <- geosphere::distm(origin_coords, recent_coords)
+#We have to convert meters to miles 
 dist_miles <- dist_meters * 0.000621371
+#Result in the distance between region of obj2 and 1
 cat(paste0(latest_area, " is ", round(dist_miles, 2)," miles away from Hubei, China.\n"))
 ```
 Answer is Tuvalu is 5048.88 miles away from Hubei, China.
