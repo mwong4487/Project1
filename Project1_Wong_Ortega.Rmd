@@ -6,7 +6,7 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
 ```
 
 
@@ -30,17 +30,29 @@ url_conf <- "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/cs
 
 time_series_covid19_confirmed_global<-read_csv(url_conf)
 
-# View(time_series_covid19_confirmed_global)
-first_day_data <-as.Date("2020-01-22")
-max_cases_location <- first_day_data[which.max(2020-01-22)]
-location_name <- 73
-if (73 > 0) {print(paste("The origin is predicted to be:", location_name,"based on max cases of", 444 ,"on date", 2020-01-22))} else {print("Origin cannot be determined from the first day data.")}
+#get max count on first date
+max_count <- max(time_series_covid19_confirmed_global$"1/22/20")
 
+#find which row has that max count
+for (i in 1:nrow(time_series_covid19_confirmed_global)) {
+  if (time_series_covid19_confirmed_global[["1/22/20"]][i] == max_count) {
+    max_country <- time_series_covid19_confirmed_global$`Country/Region`[i]
+  }
+}
 
+for (i in 1:nrow(time_series_covid19_confirmed_global)) {
+  if (time_series_covid19_confirmed_global[["1/22/20"]][i] == max_count) {
+    max_state <- time_series_covid19_confirmed_global$`Province/State`[i]
+  }
+}
 ```
 
+Location of Max confirmations of COVID-19 is `r max_state`, `r max_country` as of 01/22/2020
 
-#Objective 2
+Same as deaths. Confirmations equal 444, deaths equal 17
+
+
+# Objective 2
 
 Where is the recent area to have a confirmed case?
 
@@ -141,13 +153,12 @@ highest_risk <- highest_risk[order(highest_risk$X3.9.23.x,decreasing = T), ]
 highest_risk[1,c("Country.Region","Province.State","latest_risk","X3.9.23.x","X3.9.23.y")]
 
 ```
-The area of the world currently having the highest risk score is North Korea. The risk score is 6 and there were 1 death and 600 confirmations.
-
+The area of the world currently having the highest risk score is `r highest_risk[1,c("Country.Region")]`. The risk score is `r highest_risk[1,c("latest_risk")]` and there were `r highest_risk[1,c("X3.9.23.y")]` death and `r highest_risk[1,c("X3.9.23.x")]` confirmations.
 
 ```{r}
 mean(data_merged_use$latest_risk, na.rm = T)
 ```
-The mean global risk score is 3.2. Different areas of the world may have different risk score since different regions (geographically like Middle East, Southeast Asia, North America, or socioeconomically like by GDP) would naturally have different average risk score due to many factors like reporting, detection and treatment capability. It is more meaningful to compare any given country's risk score to another comparable country or countries. The findings of where are the lowest and highest risk scores underline the limitations of the risk score. The data is only as good as the collection method. North Korea likely does not have a good disease surveillance program and even if it does, may not report accurate numbers for political reasons. So it only had one death, but compared against an artificially low confirmation number of 600 made the risk score so high. The risk score also does not take into account population size, so morbidity burden cannot be assessed.
+The mean global risk score is `r mean(data_merged_use$latest_risk, na.rm = T)`. Different areas of the world may have different risk score since different regions (geographically like Middle East, Southeast Asia, North America, or socioeconomically like by GDP) would naturally have different average risk score due to many factors like reporting, detection and treatment capability. It is more meaningful to compare any given country's risk score to another comparable country or countries. The findings of where are the lowest and highest risk scores underline the limitations of the risk score. The data is only as good as the collection method. North Korea likely does not have a good disease surveillance program and even if it does, may not report accurate numbers for political reasons. So it only had one death, but compared against an artificially low confirmation number of 6 made the risk score so high. The risk score also does not take into account population size, so morbidity burden cannot be assessed.
 
 
 # Objective 5
@@ -157,25 +168,13 @@ Table of the top 5 countries with the most COVID-19-related confirmations.
 ```{r}
 library(knitr)
 
-
-url_conf <- "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv"
-data_conf <- read.csv(url_conf)
-
-url_deaths <- "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv"
-data_deaths <- read.csv(url_deaths)
-
-data_merged <- merge(x=data_conf, y=data_deaths,
-                     by.x = c("Country.Region","Province.State"),
-                     by.y = c("Country.Region","Province.State"))
-
-data_merged_use <- data_merged[!((data_merged$Lat.x == 0 & data_merged$Long.x == 0) | 
-                (is.na(data_merged$Lat.x) & is.na(data_merged$Long.x))),]
-
+#get list of all countries
 country <- unique(data_merged_use$Country.Region)
 
 country_sum_conf <- c()
 country_sum_deaths <- c()
 
+#for each country, sum up its number of confirmations and deaths
 for (i in 1:length(country)) {
     
     country_sub <- data_merged_use[data_merged_use$Country.Region == country[i],]
@@ -185,13 +184,16 @@ for (i in 1:length(country)) {
     country_sum_deaths[i] <-sum(country_sub$X3.9.23.y, na.rm = T)    
 }
 
+#turn into list
 country_list <- list(country_name = country,
                      num_of_confirmations = country_sum_conf,
                      num_of_deaths = country_sum_deaths
                      )
 
+#turn into data frame
 country_df <- as.data.frame(country_list)
 
+#sort in decreasing order
 country_df <- country_df[order(country_df$num_of_confirmations,decreasing = T), ]
 
 
